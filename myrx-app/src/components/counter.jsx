@@ -1,15 +1,23 @@
 import React, { Component } from "react";
+import firebase from "firebase";
 import axios from "axios";
 
-const apiEndpoint = "https://myrx-app.firebaseio.com";
 class Counter extends Component {
+  state = {
+    route: "counter"
+  };
   render() {
     return (
       <tr>
         <td>
           <span className={this.getMedicationName()}>
             <h2>
-              <span className="fas fa-capsules" />
+              <span />
+              <img
+                src={require(`${this.props.counter.image}`)}
+                height="50"
+                width="50"
+              />
               {this.formatName()}
             </h2>
           </span>
@@ -61,7 +69,9 @@ class Counter extends Component {
   }
 
   async componentDidMount() {
-    const { data: medications } = await axios.get(apiEndpoint);
+    const { data: medications } = await axios.get(
+      firebase.database().ref(this.state.route)
+    );
     this.setState({ medications });
   }
 
@@ -84,13 +94,13 @@ class Counter extends Component {
   getBadgeClasses() {
     let classes = "btn btn-";
     classes +=
-      this.props.counter.value === 0 ? "info btn-md m-2" : "primary btn-md m-2";
+      this.props.counter.quantity === 0 ? "info btn-md m-2" : "info btn-md m-2";
     return classes;
   }
 
   formatCount() {
-    const { value } = this.props.counter;
-    return value === 0 ? "0" : value;
+    const { quantity } = this.props.counter;
+    return quantity === 0 ? "0" : quantity;
   }
 }
 

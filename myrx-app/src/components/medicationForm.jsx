@@ -1,61 +1,77 @@
 import React from "react";
 import Joi from "joi-browser";
 import Form from "./common/form";
-import { getMedication, saveMedication } from "./medicationService";
-import Medications from "./medications";
+import firebase from "firebase";
 
 class MedicationForm extends Form {
   state = {
-    data: { name: "", dosage: "", _id: "" },
+    data: {
+      name: "",
+      dosage: "",
+      image: "",
+      quantity: "",
+      patient: "",
+      counter: "",
+      counters: ""
+    },
+    images: [],
+    route: "medications",
     errors: {}
   };
 
   schema = {
-    _id: Joi.string(),
     name: Joi.string()
       .required()
       .label("Medication Name"),
     dosage: Joi.string()
       .required()
-      .label("Dosage")
+      .label("Dosage"),
+    image: Joi.string().label("Image")
   };
 
-  componentDidMount() {
-    const medicationId = this.props.match.params.id;
-    if (medicationId === "new") return;
-
-    const medication = getMedication(medicationId);
-    //   if (!medication) return this.props.history.replace("/not-found");
-
-    this.setState({ data: this.mapToViewModel(medication) });
+  async componentDidMount() {
+    var { data: medication } = await firebase.database().ref(this.state.route);
+    this.setState({ medication });
   }
 
-  // mapToViewModel(medication) {
-  //   return {
-  //     // _id: medication._id,
-  //     name: medication.name,
-  //     dosage: medication.dosage
-  //   };
-  // }
-  handleSubmit = () => {
-    Medications.handleAdd(this.state.data);
+  handleAdd = async data => {
+    const obj = data;
+    const medication = await firebase.database().ref(this.state.route, obj);
+    const medications = [medication, ...this.state.medications];
+    this.setState({ medications });
+    console.log("Submitted");
   };
 
-  doSubmit = () => {
-    saveMedication(this.state.data);
-    this.props.history.push("/medications");
+  handleUpdate = async medication => {
+    await firebase
+      .database()
+      .ref(this.state.route + "/" + medication.id, medication);
+    const medications = [...this.state.medications];
+    const index = medications.indexOf(medication);
+    medications[index] = { ...medication };
+    this.setState({ medications });
   };
+
+  mapToViewModel(medication) {
+    return {
+      name: medication.name,
+      dosage: medication.dosage
+    };
+  }
 
   render() {
     return (
-      <div>
-        <h1>New Medication Form</h1>
-        <form onSubmit={this.handleSubmit}>
-          {this.renderInput("name", "Name")}
-          {this.renderInput("dosage", "Dosage")}
-          {this.renderButton("Save")}
-        </form>
-      </div>
+      <center>
+        <div className="col col-4">
+          <h1>New Medication</h1>
+          <form onSubmit={this.handleSubmit}>
+            {this.renderInput("name", "Name")}
+            {this.renderInput("dosage", "Dosage")}
+            {this.renderInput("image", "Image")}
+            {this.renderButton("Save")}
+          </form>
+        </div>
+      </center>
     );
   }
 }

@@ -1,26 +1,69 @@
 import React, { Component } from "react";
 import Counters from "./counters";
 import { Link } from "react-router-dom";
-import Form from "./common/form";
+import firebase from "firebase";
 import axios from "axios";
 
-const apiEndpoint = "https://myrx-app.firebaseio.com";
 class Medications extends Component {
   state = {
     counters: [
-      { id: 1, value: 0, name: "Medication A", dosage: "50 mg" },
-      { id: 2, value: 0, name: "Medication B", dosage: "100 mg" },
-      { id: 3, value: 0, name: "Medication C", dosage: "200 mg" },
-      { id: 4, value: 0, name: "Medication D", dosage: "25 mg" }
+      {
+        id: 1,
+        quantity: 0,
+        name: "Yellow Tablet",
+        dosage: "50 mg",
+        image: "./images/yellow.jpg",
+        time: ""
+      },
+      {
+        id: 2,
+        quantity: 0,
+        name: "Heart Medication",
+        dosage: "100 mg",
+        image: "./images/heart.jpg",
+        time: ""
+      },
+      {
+        id: 3,
+        quantity: 0,
+        name: "Neuro Inhibitor",
+        dosage: "200 mg",
+        image: "./images/neuro.jpg",
+        time: ""
+      },
+      {
+        id: 4,
+        quantity: 0,
+        name: "Vitamin b12",
+        dosage: "250 mg",
+        image: "./images/b12.jpg",
+        time: ""
+      },
+      {
+        id: 5,
+        quantity: 0,
+        name: "Lipitor",
+        dosage: "20 mg",
+        image: "./images/lipitor.jpg",
+        time: ""
+      }
     ],
-    data: { name: "", dosage: "" },
+    timeForMeds: [
+      { _id: 1, value: "7:00 AM" },
+      { _id: 2, value: "10:00 AM" },
+      { _id: 3, value: "1:00 PM" },
+      { _id: 4, value: "4:00 PM" },
+      { _id: 5, value: "7:00 PM" }
+    ],
+    route: "medications",
+    data: { name: "", dosage: "", quantity: "", image: "", time: "" },
     errors: {}
   };
   handleIncrement = counter => {
     const counters = [...this.state.counters];
     const index = counters.indexOf(counter);
     counters[index] = { ...counter };
-    counters[index].value++;
+    counters[index].quantity++;
     this.setState({ counters });
   };
 
@@ -28,8 +71,8 @@ class Medications extends Component {
     const counters = [...this.state.counters];
     const index = counters.indexOf(counter);
     counters[index] = { ...counter };
-    if (counters[index].value > 0) {
-      counters[index].value--;
+    if (counters[index].quantity > 0) {
+      counters[index].quantity--;
     }
     this.setState({ counters });
   };
@@ -46,7 +89,7 @@ class Medications extends Component {
     const counters = [...this.state.counters];
     const index = counters.indexOf(counter);
     counters[index] = { ...counter };
-    counters[index].value = 0;
+    counters[index].quantity = 0;
     this.setState({ counters });
   };
 
@@ -56,28 +99,50 @@ class Medications extends Component {
   };
 
   async componentDidMount() {
-    const { data: medications } = await axios.get(apiEndpoint);
+    const { data: medications } = await axios.get(
+      firebase.database().ref(this.state.route)
+    );
     this.setState({ medications });
   }
 
   handleAdd = async data => {
     const obj = data;
-    const medication = await axios.post(apiEndpoint, obj);
+    const medication = await axios.post(
+      firebase.database().ref(this.state.route),
+      obj
+    );
     const medications = [medication, ...this.state.medications];
     this.setState({ medications });
     console.log("Submitted");
   };
 
   handleUpdate = async medication => {
-    await axios.put(apiEndpoint + "/" + medication.id, medication);
+    await axios.put(
+      firebase.database().ref(this.state.route) + "/" + medication.id,
+      medication
+    );
     const medications = [...this.state.medications];
     const index = medications.indexOf(medication);
     medications[index] = { ...medication };
     this.setState({ medications });
   };
+  handleChange = event => {
+    const errors = { ...this.state.errors };
+    const input = event.target.value;
+    console.log("Input  " + input);
+    // const errorMessage = this.validateProperty(input);
+    // if (errorMessage) errors[input.name] = errorMessage;
+    // else delete errors[input.name];
+
+    let data = { ...this.state.data };
+    data = input.value;
+    this.setState({ data });
+  };
 
   render() {
-    const totalCounters = this.state.counters.filter(c => c.value > 0).length;
+    const totalCounters = this.state.counters.filter(c => c.quantity > 0)
+      .length;
+    const timeOption = this.state.counters._id;
     return (
       <React.Fragment>
         <div>
@@ -93,8 +158,9 @@ class Medications extends Component {
             >
               {totalCounters}
             </span>
+            <span style={{ fontSize: "40px" }}>{timeOption}</span>
           </span>
-          <table className="container">
+          <div className="container">
             <Counters
               counters={this.state.counters}
               onReset={this.handleReset}
@@ -102,7 +168,7 @@ class Medications extends Component {
               onDecrement={this.handleDecrement}
               onDelete={this.handleDelete}
             />
-          </table>
+          </div>
           <span>
             <Link
               to="/newMedication"

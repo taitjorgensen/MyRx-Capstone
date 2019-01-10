@@ -5,7 +5,12 @@ import Form from "./common/form";
 var firebase = require("firebase");
 class RegisterForm extends Form {
   state = {
-    data: { username: "", password: "", name: "" },
+    data: { username: "", password: "", name: "", role: "", phoneNumber: "" },
+    roles: [
+      { value: "patient", name: "Patient" },
+      { value: "healthcareWorker", name: "Healthcare Provider" },
+      { value: "careTaker", name: "Care Taker" }
+    ],
     errors: {}
   };
 
@@ -20,7 +25,14 @@ class RegisterForm extends Form {
       .label("Password"),
     name: Joi.string()
       .required()
-      .label("Name")
+      .label("Name"),
+    role: Joi.string()
+      .required()
+      .label("Role"),
+    phoneNumber: Joi.number()
+      .integer()
+      .required()
+      .label("Phone Number")
   };
 
   doSubmit = () => {
@@ -34,8 +46,12 @@ class RegisterForm extends Form {
         <h1>Register</h1>
         <form onSubmit={this.doSubmit}>
           {this.renderInput("username", "Username")}
+          <p>Must be a valid email address.</p>
           {this.renderInput("password", "Password", "password")}
           {this.renderInput("name", "Name")}
+          {this.renderSelect("role", "Role", this.state.roles)}
+          {this.renderInput("phoneNumber", "Phone Number")}
+          <p>*Numbers only, no dashes.</p>
           {this.renderButton("Register")}
         </form>
       </div>

@@ -17,12 +17,13 @@ const NavBar = ({ totalCounters }) => {
           <NavLink className="nav-item nav-link" to="/">
             Home
           </NavLink>
-          <NavLink className="nav-item nav-link" to="/patients">
+          <NavLink className="nav-item nav-link" to="/patient">
             Patients
           </NavLink>
           <NavLink className="nav-item nav-link" to="/medications">
             Medications
           </NavLink>
+
           <NavLink className="nav-item nav-link" to="/login">
             Login
           </NavLink>
